@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" 
+   href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+  <link rel="stylesheet" type="text/css" 
+   href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <title>Ninja Gold</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello, {{ email }}. Welcome to Ninja Gold</h1>
+    <div class="gold">
+      <p>Your gold: {{ gold }}</p>
+    </div>
+    <div class="locations">
+      {% for location in locations %}
+      <div class="location">
+        <form action="/process" method="post">
+          <h3>{{ location['name'] }}</h3>
+          <p>Get between {{ location['min_gold'] }} and {{ location['max_gold'] }} golds</p>
+          <input type="hidden" name="location" value="{{ location['id'] }}">
+          <input type="submit" value="Visit {{ location['name'] }}">
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="activities">
+      {% for activity in activities %}
+        <p>You got {{ activity['gold_amount'] }} from {{ activity['name'] }} at {{ activity['time'] }}</p>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

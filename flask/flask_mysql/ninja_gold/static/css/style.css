@@ -7,3 +7,29 @@
 .errors {
   color: red;
 }
+
+.locations {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.location,
+.gold {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.gold {
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.location {
+  text-align: center;
+}
+
+.activities {
+  margin-top: 15px;
+  height: 200px;
+  overflow-y: auto;
+}

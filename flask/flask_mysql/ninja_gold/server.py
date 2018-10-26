@@ -3,6 +3,7 @@ from mysqlconnection import connectToMySQL
 from flask_bcrypt import Bcrypt
 
 import re
+import random
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -12,6 +13,70 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 @app.route('/')
 def index():
   return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+  if 'user_id' not in session:
+    return redirect('/')
+  
+  db = connectToMySQL('oct_ninja_gold')
+  query = "SELECT * FROM users WHERE id=%(user_id)s"
+  data = {
+    'user_id': session['user_id']
+  }
+  user_list = db.query_db(query, data)
+  user = user_list[0]
+
+  db = connectToMySQL('oct_ninja_gold')
+  locations_query = "SELECT * FROM locations;"
+  locations = db.query_db(locations_query)
+
+  db = connectToMySQL('oct_ninja_gold')
+  activities_query = "SELECT activities.gold_amount AS gold_amount, locations.name AS name, activities.created_at AS time FROM activities JOIN locations ON activities.location_id = locations.id WHERE user_id=%(user_id)s ORDER BY activities.created_at DESC;"
+  data = {
+    'user_id': session['user_id']
+  }
+  activities_list = db.query_db(activities_query, data)
+
+  return render_template('dashboard.html', email=user['email'], gold=user['gold'], locations=locations, activities=activities_list)
+
+@app.route('/process', methods=['POST'])
+def process():
+  db = connectToMySQL('oct_ninja_gold')
+  location_query = "SELECT * FROM locations WHERE id=%(location_id)s"
+  data = {
+    "location_id": request.form['location']
+  }
+  location_list = db.query_db(location_query, data)
+  location = location_list[0]
+
+  curr_gold = random.randint(int(location['min_gold']), int(location['max_gold']))
+
+  db = connectToMySQL('oct_ninja_gold')
+  activity_insert_query = 'INSERT INTO activities (gold_amount, user_id, location_id, created_at, updated_at) VALUES(%(gold)s, %(user_id)s, %(location_id)s, NOW(), NOW());'
+  data = {
+    "gold": curr_gold,
+    "user_id": session['user_id'],
+    "location_id": location['id']
+  }
+  db.query_db(activity_insert_query, data)
+
+  db = connectToMySQL('oct_ninja_gold')
+  user_gold_query = "SELECT gold FROM users WHERE id=%(user_id)s;"
+  data = {
+    'user_id': session['user_id']
+  }
+  user_list = db.query_db(user_gold_query, data)
+  user = user_list[0]
+
+  db = connectToMySQL('oct_ninja_gold')
+  user_update_gold = 'UPDATE users SET gold = %(new_amount)s WHERE id=%(user_id)s;'
+  data = {
+    'new_amount': int(user['gold']) + curr_gold,
+    'user_id': session['user_id']
+  }
+  db.query_db(user_update_gold, data)
+  return redirect('/dashboard')
 
 @app.route('/users/create', methods=["POST"])
 def users_create():
@@ -55,6 +120,27 @@ def users_create():
     }
     db.query_db(query, data)
     return redirect('/')
+
+@app.route('/login', methods=['POST'])
+def login():
+  db = connectToMySQL('oct_ninja_gold')
+  query = "SELECT pw_hash, id FROM users WHERE email=%(email)s;"
+  data = {
+    'email': request.form['email']
+  }
+  result = db.query_db(query, data)
+
+  if len(result) == 0:
+    flash("Email or password incorrect")
+    return redirect('/')
+  
+  user = result[0]
+  if not bcrypt.check_password_hash(user['pw_hash'], request.form['password']):
+    flash("Email or password incorrect")
+    return redirect('/')
+
+  session['user_id'] = user['id']
+  return redirect('/')
 
 if __name__ == "__main__":
   app.run(debug=True)
