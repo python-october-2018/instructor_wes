@@ -135,11 +135,56 @@ def login():
     return redirect('/')
   
   user = result[0]
+  print("*" * 80)
+  print(user)
+  print(request.form['password'])
   if not bcrypt.check_password_hash(user['pw_hash'], request.form['password']):
     flash("Email or password incorrect")
     return redirect('/')
 
   session['user_id'] = user['id']
+  return redirect('/dashboard')
+
+@app.route('/new_location')
+def new_location():
+  return render_template('new_location.html')
+
+@app.route('/create_location', methods=['POST'])
+def create_location():
+  errors = False
+
+  if len(request.form['name']) < 3:
+    flash("Name must be at least 3 characters")
+    errors = True
+
+  try:
+    max_gold = int(request.form['max_gold'])
+    min_gold = int(request.form['min_gold'])
+
+    if min_gold > max_gold:
+      flash("Max Gold must be greater than Min Gold")
+      errors = True
+  except:
+    flash("Max/Min gold must be integers")
+    errors = True
+
+  if errors == True:
+    return redirect('/new_location')
+  else:
+    # create location
+    db = connectToMySQL('oct_ninja_gold')
+    insert_query = 'INSERT INTO locations (name, max_gold, min_gold, created_at, updated_at) VALUES (%(name)s, %(max_gold)s, %(min_gold)s, NOW(), NOW());'
+    data = {
+      "name": request.form['name'].lower(),
+      "max_gold": max_gold,
+      "min_gold": min_gold
+    }
+    db.query_db(insert_query, data)
+    return redirect('/dashboard')
+
+@app.route('/logout')
+def logout():
+  session.clear()
   return redirect('/')
 
 if __name__ == "__main__":
