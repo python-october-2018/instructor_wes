@@ -1,3 +1,5 @@
 first_venv/
 .vscode
 *.pyc
+flask_venv/
+venv_django/
