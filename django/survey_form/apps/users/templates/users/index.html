@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" 
+   href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css">
+  <link rel="stylesheet" type="text/css" 
+   href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+  <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Survey Form</h1>
+    <h2>{{ color }}</h2>
+    <h2>{{ number }}</h2>
+    <form action="/process/" method="post">
+      {% csrf_token %}
+      <label for="name">Name:</label>
+      <input type="text" name="name" id="">
+      <label for="favorite_language">Favorite Language:</label>
+      <select name="favorite_language" id="">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="csharp">C#</option>
+      </select>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+</body>
+</html>
