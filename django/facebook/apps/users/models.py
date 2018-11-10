@@ -48,7 +48,19 @@ class UserManager(models.Manager):
     return user
 
   def login(self, form):
-    pass
+    errors = []
+
+    try:
+      user = self.get(email=form['email'])
+      if not bcrypt.checkpw(form['password'].encode(), user.pw_hash.encode()):
+          errors.append("Email or password incorrect.")
+    except:
+      errors.append("Email or password incorrect.")
+
+    if len(errors) > 0:
+      return (False, errors)
+    else:
+      return (True, user)
 
 class User(models.Model):
   first_name = models.CharField(max_length = 255)

@@ -4,6 +4,9 @@ from .models import User
 
 # Create your views here.
 def index(req):
+  if 'user_id' not in req.session:
+    return redirect('/users/new')
+
   return render(req, 'users/index.html')
 
 def new(req):
@@ -23,4 +26,11 @@ def create(req):
   return redirect('/users/new')
 
 def login(req):
+  info = User.objects.login(req.POST)
+  if info[0] == False:
+    for error in info[1]:
+      messages.error(req, error)
+  else:
+    req.session['user_id'] = info[1].id
+    return redirect('/users')
   return redirect('/users/new')
