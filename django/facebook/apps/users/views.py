@@ -22,15 +22,15 @@ def create(req):
     # hash password and create user
     user = User.objects.create_user_with_hashed_password(req.POST)
     req.session['user_id'] = user.id
-    return redirect('/users')
+    return redirect('/')
   return redirect('/users/new')
 
 def login(req):
-  info = User.objects.login(req.POST)
-  if info[0] == False:
-    for error in info[1]:
+  valid, result = User.objects.login(req.POST)
+  if valid == False:
+    for error in result:
       messages.error(req, error)
   else:
-    req.session['user_id'] = info[1].id
-    return redirect('/users')
+    req.session['user_id'] = result.id
+    return redirect('/')
   return redirect('/users/new')
