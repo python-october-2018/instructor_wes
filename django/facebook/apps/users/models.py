@@ -61,6 +61,19 @@ class UserManager(models.Manager):
       return (False, errors)
     else:
       return (True, user)
+  
+  def create_friend_request(self, form, sender_id):
+    sent_by = self.get(id = sender_id)
+    sent_to = self.get(id = form['request_to'])
+    print(sent_by, sent_to)
+    Request.objects.create(request_from = sent_by, request_to = sent_to)
+  
+  def delete_friend_request(self, form, user_id):
+    sent_by = self.get(id = user_id)
+    sent_to = self.get(id = form['request_to'])
+    requests = Request.objects.filter(request_from = sent_by).filter(request_to = sent_to)
+    if requests:
+      requests[0].delete()
 
 class User(models.Model):
   first_name = models.CharField(max_length = 255)
@@ -75,5 +88,6 @@ class User(models.Model):
   def __str__(self):
     return self.username
 
-# SELECT * FROM users;
-# SELECT * FROM users WHERE id = 1;
+class Request(models.Model):
+  request_from = models.ForeignKey(User, related_name = "requests_sent")
+  request_to = models.ForeignKey(User, related_name = "requests_received")
